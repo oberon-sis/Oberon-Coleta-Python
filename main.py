@@ -6,13 +6,11 @@ from src.log_sistema_detalhe import iniciar_sessao_log_sistema, finalizar_sessao
 from src.maquina_config import buscar_e_validar_maquina, obter_parametros_monitoramento
 from src.alertas import inserir_registro_de_metrica, processar_alerta_leitura
 from src.captura import capturar_dado_da_metrica
-from src.incidente import registrar_incidente
-from utils.Database import Fazer_consulta_banco
-from src.slack_service import procurar_informacoes_slack
+from src.slack_service import procurar_informacoes_slack, enviar_notificacao_slack, notificar_suporte_interno, notificar_cliente_amigavel
 from src.slack_service import enviar_notificacao_slack
+from src.incidente import criar_incidente_e_anexar_log
 
-
-
+import traceback
 # Constantes de Configuração
 INTERVALO_DE_COLETA_SEGUNDOS = 200
 
@@ -48,49 +46,68 @@ saida = """
     ║  Até a próxima utilização.                         ║
     ╚════════════════════════════════════════════════════╝
     """
+
+ID_CANAL_SUPORTE_OBERON = "C0A0FAW0M2R"
+
+ID_CANAL_SLACK_CLIENTE = None
+
 def main():
-    """ Ponto de entrada principal com tratamento de interrupção. """
     global fkLogSistema
     global logo
-    pausa_necessaria = False 
+    global maquina_data
+    
+    erro_fatal = None
+    
     try:
         print(logo)
         orquestrar_coleta()
         
     except KeyboardInterrupt:
-        pausa_necessaria = True
         formatar_palavra("\nMonitoramento Interrompido pelo Usuário.")
-    else: 
-        if maquina_data is None:
-             pausa_necessaria = True
+    except Exception as e:
+        erro_fatal = str(e)
+        formatar_palavra(f"\nERRO CRÍTICO NO AGENTE: {erro_fatal}")
+        traceback.print_exc()
     finally:
-        # Lógica de encerramento
         if fkLogSistema is not None and fkLogSistema != -1:
-            registrar_log_evento("Agente encerrado. Finalizando sessão LogSistema.", False, None, 'LOG FIM')
             
-            # 1. Insere LogDetalheEvento para o desligamento
-            id_log_detalhe = inserir_detalhe_de_evento(
-                fkLogSistema, 'Desligamento', 'Agente encerrado por KeyboardInterrupt.'
-            )
-            
-            # 2. Registra Incidente
-            if id_log_detalhe != -1:
-                 registrar_incidente(
-                    id_log_detalhe, 'Máquina Desligou/Agente Encerrado', 'Encerramento inesperado.', 'Software', 'Critica', fkLogSistema
+            if erro_fatal:
+                registrar_log_evento(f"Iniciando protocolo de incidente: {erro_fatal}", False)
+                
+                chave_jira, link_jira = criar_incidente_e_anexar_log(
+                    titulo=f"Crash Agente - {maquina_data['nomeMaquina'] if maquina_data else 'S/N'}",
+                    descricao=f"Erro fatal: {erro_fatal}",
+                    fkLogSistema=fkLogSistema
                 )
+
+                nome_maquina = maquina_data['nomeMaquina'] if maquina_data else "Máquina Desconhecida"
+
+                print("Enviando alerta para o Suporte Interno...")
+                notificar_suporte_interno(
+                    canal_suporte_id=ID_CANAL_SUPORTE_OBERON, 
+                    mensagem_erro=erro_fatal, 
+                    link_jira=link_jira,
+                    nome_maquina=nome_maquina
+                )
+
+                if ID_CANAL_SLACK_CLIENTE:
+                    print(f"Enviando aviso para o Cliente (Canal {ID_CANAL_SLACK_CLIENTE})...")
+                    notificar_cliente_amigavel(
+                        canal_cliente_id=ID_CANAL_SLACK_CLIENTE,
+                        nome_maquina=nome_maquina
+                    )
             
+            # Finaliza sessão no banco
+            inserir_detalhe_de_evento(fkLogSistema, 'Desligamento', 'Agente finalizado.')
             finalizar_sessao_log_sistema(fkLogSistema)
-        if pausa_necessaria and fkLogSistema is None:
-            print("\n ATENÇÃO: O AGENTE ENCERROU INESPERADAMENTE. VERIFIQUE OS LOGS ACIMA.")
-            input("Pressione Enter para sair...")
 
 def orquestrar_coleta():
     """ Orquestrador principal funcional. """
     global maquina_data
     global fkLogSistema
     global slackInfo 
+    global ID_CANAL_SLACK_CLIENTE
     
-    # 1. VALIDAÇÃO E INÍCIO DE SESSÃO
     maquina_data = buscar_e_validar_maquina()
     
     if maquina_data is None:
@@ -110,13 +127,17 @@ def orquestrar_coleta():
         registrar_log_evento("Nenhum parâmetro configurado. Encerrando.", True, fkLogSistema, 'LOG GERAL')
         return
 
-    ID_CNAAL_SLACK = procurar_informacoes_slack(maquina_data['idMaquina'])
+    ID_CANAL_SLACK_CLIENTE = procurar_informacoes_slack(maquina_data['idMaquina'])
 
-    if ID_CNAAL_SLACK is None or len(ID_CNAAL_SLACK) < 10:
+    if ID_CANAL_SLACK_CLIENTE is None or len(ID_CANAL_SLACK_CLIENTE) < 10:
         registrar_log_evento("Nenhum Canal encontrado", True, fkLogSistema, 'LOG GERAL')
         return 
 
-    # 3. LOOP DE COLETA
+    # ---------------------------------------------------------
+    #  LINHA DE TESTE -- para testar a criação de incidentes
+    # Isso vai forçar o código a falhar assim que iniciar a coleta
+    # raise Exception("TESTE DE CRASH: Verificando abertura de chamado no Jira e Slack")
+    # ---------------------------------------------------------
     while True:
         registrar_log_evento("Iniciando novo ciclo de coleta...", True, fkLogSistema, 'LOG COLETA')
         print('╔═══════════════════════════════════════════════════════════════════════════════════════════════════════════════╗')
@@ -130,11 +151,9 @@ def orquestrar_coleta():
             
             fkComponente = lista_parametros[0]['fkComponente']
 
-            # Insere Registro ÚNICO
             idRegistro = inserir_registro_de_metrica(valor_dado, fkComponente)
             
             if idRegistro != -1:
-                # Processa os 3 níveis (ATENCAO, ALERTA, CRITICO)
                 for medida in lista_parametros:
                     
                     print(f"   - Coleta: {tipo} ({medida['unidade']}) → Valor: {valor_dado:.2f} {medida['unidade']} → Limite Configurado ({medida['nivel']}): {medida['limite']}")
@@ -145,7 +164,7 @@ def orquestrar_coleta():
                     )
 
                     if alerta_descricao is not None:
-                        enviar_notificacao_slack(ID_CNAAL_SLACK, alerta_descricao, maquina_data )
+                        enviar_notificacao_slack(ID_CANAL_SLACK_CLIENTE, alerta_descricao, maquina_data )
         
         print('\n╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════╝')
         time.sleep(INTERVALO_DE_COLETA_SEGUNDOS)
