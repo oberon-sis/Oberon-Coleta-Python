@@ -25,8 +25,8 @@ def processar_alerta_leitura(idRegistro: int, idParametro: int, tipo: str, valor
     titulo_notificacao = None
     if(nivel == "ACEITÁVEL"):
         if(valor < limite):
-            nivel = "OSCIOSO"
-            titulo_notificacao = "ALERTA OSCIOSO DE MONITORAMENTO"
+            nivel = "OCIOSO"
+            titulo_notificacao = "ALERTA OCIOSO DE MONITORAMENTO"
             alerta_ativo = True
             descricao = f"Uso de {tipo} está abaixo do nivel aceitavél, se encontra em estado oscioso ({limite:.2f}%). Valor atual: {valor:.2f}% ({diferenca}%  Abaixo do Limite)."
     else:
