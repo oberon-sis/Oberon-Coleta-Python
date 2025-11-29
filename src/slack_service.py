@@ -185,3 +185,85 @@ def enviar_notificacao_slack(ID_CNAAL_SLACK: str, alerta_descricao: dict, maquin
         error_msg = f"Erro inesperado ao enviar notificação Slack: {str(e)}"
         print(f"[SLACK] ERRO: {error_msg}")
         registrar_log_evento(error_msg, True, None, 'ERRO SLACK')
+
+def notificar_suporte_interno(canal_suporte_id: str, mensagem_erro: str, link_jira: str, nome_maquina: str):
+    """
+    Envia o alerta TÉCNICO para o canal fixo da equipe Oberon.
+    """
+    if not slack_client or not canal_suporte_id:
+        return
+
+    blocks = [
+        {
+            "type": "header",
+            "text": {"type": "plain_text", "text": "🚨 CRASH: AGENTE PYTHON OBERON PAROU"}
+        },
+        {
+            "type": "section",
+            "fields": [
+                {"type": "mrkdwn", "text": f"*Máquina:*\n{nome_maquina}"},
+                {"type": "mrkdwn", "text": "*Status:*\n❌ Inoperante"}
+            ]
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn", 
+                "text": f"*Erro Técnico:*\n`{str(mensagem_erro)[:500]}`" 
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn", 
+                "text": f" *Chamado Jira Criado*\n<{link_jira}|Clique aqui para ver logs e detalhes>"
+            }
+        }
+    ]
+
+    try:
+        slack_client.chat_postMessage(channel=canal_suporte_id, text="Erro Crítico - Suporte", blocks=blocks)
+        print(f"[SLACK] Notificação técnica enviada para o suporte (Canal {canal_suporte_id}).")
+    except Exception as e:
+        print(f"[SLACK] Erro ao notificar suporte: {e}")
+
+
+def notificar_cliente_amigavel(canal_cliente_id: str, nome_maquina: str):
+    """
+    Envia um aviso AMIGÁVEL para o canal do cliente (banco de dados).
+    """
+    if not slack_client or not canal_cliente_id:
+        return
+
+    blocks = [
+        {
+            "type": "header",
+            "text": {"type": "plain_text", "text": "Aviso de Instabilidade"}
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn", 
+                "text": f"Detectamos uma interrupção no monitoramento da máquina *{nome_maquina}*."
+            }
+        },
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn", 
+                "text": " *Não se preocupe!* Nossa equipe de suporte já recebeu o alerta automático e está trabalhando para restabelecer o serviço o mais rápido possível."
+            }
+        },
+        {
+            "type": "context",
+            "elements": [
+                {"type": "mrkdwn", "text": "Oberon • Sistema de Monitoramento 24h • Equipe de Suporte"}
+            ]
+        }
+    ]
+
+    try:
+        slack_client.chat_postMessage(channel=canal_cliente_id, text="Aviso de Instabilidade Oberon", blocks=blocks)
+        print(f"[SLACK] Notificação amigável enviada para o cliente (Canal {canal_cliente_id}).")
+    except Exception as e:
+        print(f"[SLACK] Erro ao notificar cliente: {e}")
