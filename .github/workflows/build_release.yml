@@ -18,11 +18,12 @@ jobs:
       PASSWORD_DB: ${{ secrets.PASSWORD_DB }}
       HOST_DB: ${{ secrets.HOST_DB }}
       DATABASE_DB: ${{ secrets.DATABASE_DB }}
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
       JIRA_URL: ${{ secrets.JIRA_URL }}
       JIRA_USER: ${{ secrets.JIRA_USER }}
       JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
       JIRA_PROJECT_KEY: ${{ secrets.JIRA_PROJECT_KEY }}
+      LINK_PAINEL: ${{ secrets.LINK_PAINEL }}
       
       # Variáveis estáticas de ambiente
       EXECUTABLE_BASE_NAME: OberonAgente

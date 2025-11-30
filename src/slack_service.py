@@ -45,6 +45,11 @@ def formatar_mensagem_alerta(idMaquina:int, alerta_descricao: dict, informacoes_
     Array blocks para formatação
     para editar o formato acessar https://app.slack.com/block-kit-builder
     """
+    print(idMaquina)
+    print(alerta_descricao)
+    print(informacoes_maquina)
+    print(nomeMaquina)
+    print(informacoes_componentes)
     blocks_container = {
         "blocks": [
             {
@@ -65,30 +70,30 @@ def formatar_mensagem_alerta(idMaquina:int, alerta_descricao: dict, informacoes_
                 "type": "divider"
             },
             {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "*Contexto Técnico:*"
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "*Contexto Técnico:*"
+                    },
+                    "fields": [
+                        {
+                            "type": "mrkdwn",
+                            "text": f"* Nome/ID:*\n{str(nomeMaquina)}"
+                        },
+                        {
+                            "type": "mrkdwn",
+                            "text": f"*Sistema Operacional:*\n{str(informacoes_maquina['sistemaOperacional'])}"
+                        },
+                        {
+                            "type": "mrkdwn",
+                            "text": f"*Modelo de Hardware:*\n{str(informacoes_maquina['modelo'])}"
+                        },
+                        {
+                            "type": "mrkdwn",
+                            "text": f"*Endereço IP:*\n{str(informacoes_maquina['ip'])}"
+                        }
+                    ]
                 },
-                "fields": [
-                    {
-                        "type": "mrkdwn",
-                        "text": f"* Nome/ID:*\n{nomeMaquina}"
-                    },
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Sistema Operacional:*\n{informacoes_maquina['sistemaOperacional']}"
-                    },
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Modelo de Hardware:*\n{informacoes_maquina['modelo']}"
-                    },
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Endereço IP:*\n{informacoes_maquina['ip']}"
-                    }
-                ]
-            },
             {
                 "type": "divider"
             },
@@ -100,22 +105,25 @@ def formatar_mensagem_alerta(idMaquina:int, alerta_descricao: dict, informacoes_
                 }
             },
             {
-                "type": "section",
-                "fields": [
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*CPU (Processador):*\n{informacoes_componentes['CPU']} núcleos"
-                    },
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Memória RAM:*\n{informacoes_componentes['RAM']} GB"
-                    },
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*DISCO DURO:*\n{informacoes_componentes['DISCO']} GB"
-                    }
-                ]
-            },
+                    "type": "section",
+                    "fields": [
+                        {
+                            "type": "mrkdwn",
+                            # Garante que CPU seja string
+                            "text": f"*CPU (Processador):*\n{str(informacoes_componentes['CPU'])} núcleos"
+                        },
+                        {
+                            "type": "mrkdwn",
+                            # Garante que RAM seja string
+                            "text": f"*Memória RAM:*\n{str(informacoes_componentes['RAM'])} GB"
+                        },
+                        {
+                            "type": "mrkdwn",
+                            # Garante que DISCO seja string
+                            "text": f"*DISCO DURO:*\n{str(informacoes_componentes['DISCO'])} GB"
+                        }
+                    ]
+                },
             {
                 "type": "divider"
             },
@@ -150,7 +158,7 @@ def formatar_mensagem_alerta(idMaquina:int, alerta_descricao: dict, informacoes_
 
 def enviar_notificacao_slack(ID_CNAAL_SLACK: str, alerta_descricao: dict, maquina_data:dict ):
     """ Envia notificação real para o Slack usando a chave 'blocks'. """
-    
+    global slack_client
     if not slack_client:
         print("[SLACK] AVISO: O cliente Slack não está inicializado. Notificação ignorada.")
         return
