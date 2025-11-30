@@ -53,11 +53,15 @@ jobs:
           echo "PASSWORD_DB=${PASSWORD_DB}" >> .env
           echo "HOST_DB=${HOST_DB}" >> .env
           echo "DATABASE_DB=${DATABASE_DB}" >> .env
-          echo "SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}" >> .env
+
+          echo "SLACK_BOT_TOKEN=${SLACK_BOT_TOKEN}" >> .env
           echo "JIRA_URL=${JIRA_URL}" >> .env
           echo "JIRA_USER=${JIRA_USER}" >> .env
+
           echo "JIRA_API_TOKEN=${JIRA_API_TOKEN}" >> .env
           echo "JIRA_PROJECT_KEY=${JIRA_PROJECT_KEY}" >> .env
+
+          echo "LINK_PAINEL=${LINK_PAINEL}" >> .env
 
       - name: Rodar PyInstaller
         shell: bash

@@ -156,7 +156,7 @@ def enviar_notificacao_slack(ID_CNAAL_SLACK: str, alerta_descricao: dict, maquin
         return
 
     if not ID_CNAAL_SLACK:
-        registrar_log_evento(f"ERRO SLACK: Tentativa de envio sem 'channel_id'. Alerta: {alerta_descricao["sub-titulo"]}...", False, None, 'ERRO SLACK')
+        registrar_log_evento(f"ERRO SLACK: Tentativa de envio sem 'channel_id'. Alerta: {alerta_descricao['sub-titulo']}...", False, None, 'ERRO SLACK')
         return
 
     blocks_payload = formatar_mensagem_alerta(
