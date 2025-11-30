@@ -77,15 +77,15 @@ def formatar_mensagem_alerta(idMaquina:int, alerta_descricao: dict, informacoes_
                     },
                     {
                         "type": "mrkdwn",
-                        "text": f"*Sistema Operacional:*\n{informacoes_maquina["sistemaOperacional"]}"
+                        "text": f"*Sistema Operacional:*\n{informacoes_maquina['sistemaOperacional']}"
                     },
                     {
                         "type": "mrkdwn",
-                        "text": f"*Modelo de Hardware:*\n{informacoes_maquina["modelo"]}"
+                        "text": f"*Modelo de Hardware:*\n{informacoes_maquina['modelo']}"
                     },
                     {
                         "type": "mrkdwn",
-                        "text": f"*Endereço IP:*\n{informacoes_maquina["ip"]}"
+                        "text": f"*Endereço IP:*\n{informacoes_maquina['ip']}"
                     }
                 ]
             },
@@ -104,15 +104,15 @@ def formatar_mensagem_alerta(idMaquina:int, alerta_descricao: dict, informacoes_
                 "fields": [
                     {
                         "type": "mrkdwn",
-                        "text": f"*CPU (Processador):*\n{informacoes_componentes["CPU"]} núcleos"
+                        "text": f"*CPU (Processador):*\n{informacoes_componentes['CPU']} núcleos"
                     },
                     {
                         "type": "mrkdwn",
-                        "text": f"*Memória RAM:*\n{informacoes_componentes["RAM"]} GB"
+                        "text": f"*Memória RAM:*\n{informacoes_componentes['RAM']} GB"
                     },
                     {
                         "type": "mrkdwn",
-                        "text": f"*DISCO DURO:*\n{informacoes_componentes["DISCO"]} GB"
+                        "text": f"*DISCO DURO:*\n{informacoes_componentes['DISCO']} GB"
                     }
                 ]
             },
