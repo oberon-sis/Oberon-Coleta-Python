@@ -57,7 +57,6 @@ def main():
     global maquina_data
     
     erro_fatal = None
-    
     try:
         print(logo)
         orquestrar_coleta()
@@ -100,6 +99,12 @@ def main():
             # Finaliza sessão no banco
             inserir_detalhe_de_evento(fkLogSistema, 'Desligamento', 'Agente finalizado.')
             finalizar_sessao_log_sistema(fkLogSistema)
+          
+            print("\n ATENÇÃO: O AGENTE ENCERROU INESPERADAMENTE. VERIFIQUE OS LOGS ACIMA.")
+            print("\n CASO TENHA DADO ERRO AO ENCONTRAR O MAC ADRESS, ATUALIZAR OS DADOS DESTA MAQUINA OU FAZER O CADASTRO")
+            print("\n ATUALIZAR OS DADOS DESTA MAQUINA OU FAZER O CADASTRO.")
+            input("\nPressione Enter para sair...")
+            
 
 def orquestrar_coleta():
     """ Orquestrador principal funcional. """
@@ -136,7 +141,7 @@ def orquestrar_coleta():
     # ---------------------------------------------------------
     #  LINHA DE TESTE -- para testar a criação de incidentes
     # Isso vai forçar o código a falhar assim que iniciar a coleta
-    # raise Exception("TESTE DE CRASH: Verificando abertura de chamado no Jira e Slack")
+    raise Exception("TESTE DE CRASH: Verificando abertura de chamado no Jira e Slack")
     # ---------------------------------------------------------
     while True:
         registrar_log_evento("Iniciando novo ciclo de coleta...", True, fkLogSistema, 'LOG COLETA')

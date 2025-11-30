@@ -3,7 +3,6 @@ import sys
 import os
 from PyInstaller.utils.hooks import collect_all
 
-# 1. COLETA DE DEPENDÊNCIAS
 # Colete tudo do mysql.connector para resolver warnings/erros de importação
 datas_mysql, binaries_mysql, hiddenimports_mysql = collect_all('mysql.connector')
 
@@ -39,8 +38,10 @@ a = Analysis(
     hiddenimports=hiddenimports_mysql + [
         'psutil',
         'python-dotenv',
-        'encodings', # 🌟 CORREÇÃO PARA ModuleNotFoundError: No module named 'encodings'
-        'io' 
+        'encodings', 
+        'io', 
+        'jira', 
+        'slack-sdk' 
     ], 
     
     hookspath=[],

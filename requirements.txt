@@ -2,3 +2,6 @@ psutil
 mysql-connector-python
 python-dotenv
 pyInstaller
+
+jira
+slack-sdk
