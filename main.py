@@ -141,7 +141,7 @@ def orquestrar_coleta():
     # ---------------------------------------------------------
     #  LINHA DE TESTE -- para testar a criação de incidentes
     # Isso vai forçar o código a falhar assim que iniciar a coleta
-    raise Exception("TESTE DE CRASH: Verificando abertura de chamado no Jira e Slack")
+    # raise Exception("TESTE DE CRASH: Verificando abertura de chamado no Jira e Slack")
     # ---------------------------------------------------------
     while True:
         registrar_log_evento("Iniciando novo ciclo de coleta...", True, fkLogSistema, 'LOG COLETA')
