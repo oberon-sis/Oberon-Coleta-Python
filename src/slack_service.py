@@ -137,16 +137,7 @@ def formatar_mensagem_alerta(idMaquina:int, alerta_descricao: dict, informacoes_
                             "text": "Acessar Paineis",
                         },
                         "style": "primary",
-                        "url": f"{LINK_HOME}"
-                    },
-                    {
-                        "type": "button",
-                        "text": {
-                            "type": "plain_text",
-                            "text": "Ver Detalhes",
-                        },
-                        "style": "danger",
-                        "url": f"{LINK_PAINEL}/{idMaquina}"
+                        "url": f"{LINK_PAINEL}"
                     }
                 ]
             }
